@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco XYZ — Login</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="login-page">
+
+<div class="login-container">
+    <header class="login-header">
+        <h1 class="logo-text">BANCO<span>XYZ</span></h1>
+        <p>Acesse sua conta para continuar</p>
+    </header>
+
+    <!--
+        th:action="@{/login}" gera POST /login
+        O Spring Security intercepta automaticamente esse endpoint
+        (configurado via .loginProcessingUrl("/login") no SecurityConfig)
+    -->
+    <form th:action="@{/login}" method="post" class="login-form">
+
+        <div class="input-group">
+            <label for="username">Usuário</label>
+            <div class="input-wrapper">
+                <i data-lucide="user"></i>
+                <input type="text"
+                       id="username"
+                       name="username"
+                       placeholder="Digite seu usuário"
+                       autocomplete="username"
+                       required>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="password">Senha</label>
+            <div class="input-wrapper">
+                <i data-lucide="lock"></i>
+                <input type="password"
+                       id="password"
+                       name="password"
+                       placeholder="Digite sua senha"
+                       autocomplete="current-password"
+                       required>
+            </div>
+        </div>
+
+        <!-- Spring redireciona para /login?error quando credenciais são inválidas -->
+        <div th:if="${param.error}" class="error-message">
+            Usuário ou senha inválidos. Tente novamente.
+        </div>
+
+        <!-- Spring redireciona para /login?logout após sair -->
+        <div th:if="${param.logout}" class="success-message">
+            Você saiu com sucesso.
+        </div>
+
+        <button type="submit" class="login-btn">Entrar</button>
+    </form>
+
+    <a href="/cadastro" style="display:block; text-align:center; margin-top:16px; font-size:0.88rem; color:#820ad1; text-decoration:none;">
+        Não tem conta? <strong>Cadastre-se</strong>
+    </a>
+</div>
+
+<script th:src="@{/auth.js}"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>

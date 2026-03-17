@@ -1,0 +1,32 @@
+[
+  {
+    "nome": "Alef",
+    "cpf": "12345678900",
+    "telefone": "62999999999",
+    "senha": "1234",
+    "contas": [
+      {
+        "numeroConta": 1001,
+        "saldo": 500.0,
+        "historico": [
+          "2026-03-14T21:40:19.604781400 - Conta criada com saldo: 500.0"
+        ]
+      }
+    ]
+  },
+  {
+    "nome": "Ana",
+    "cpf": "11122233344",
+    "telefone": "62998887777",
+    "senha": "4321",
+    "contas": [
+      {
+        "numeroConta": 1002,
+        "saldo": 800.0,
+        "historico": [
+          "2026-03-14T21:40:19.612757700 - Conta criada com saldo: 800.0"
+        ]
+      }
+    ]
+  }
+]

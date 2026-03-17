@@ -1,0 +1,16 @@
+Cliente;Alef;12345678900;62999999999
+Conta;1001;650.0;Alef
+Transacao;1001;Depósito;200.0;14/03/2026 18:50:54
+Transacao;1001;Depósito;200.0;14/03/2026 18:50:54
+Transacao;1001;Saque;100.0;14/03/2026 18:50:54
+Transacao;1001;Transferência para 1003;150.0;14/03/2026 18:50:54
+Conta;1002;1000.0;Alef
+Transacao;1002;Saque;100.0;14/03/2026 18:50:54
+Transacao;1002;Depósito;200.0;14/03/2026 18:50:54
+Transacao;1002;Saque;100.0;14/03/2026 18:50:54
+Cliente;Ana;11122233344;62998887777
+Conta;1003;1550.0;Ana
+Transacao;1003;Depósito;300.0;14/03/2026 18:50:54
+Transacao;1003;Depósito;300.0;14/03/2026 18:50:54
+Transacao;1003;Transferência recebida de 1001;150.0;14/03/2026 18:50:54
+Cliente;jose ;54554678989;62985163672

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco XYZ</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root { --purple: #820ad1; --purple-dark: #4c0677; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #efefef;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .app {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: var(--purple);
+            padding: 48px 20px 28px;
+            color: white;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .avatar {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .header-actions { display: flex; gap: 16px; align-items: center; }
+        .icon-btn {
+            background: none; border: none; color: white;
+            cursor: pointer; padding: 0;
+            display: flex; align-items: center;
+        }
+        .welcome { font-size: 1.15rem; font-weight: 600; }
+
+        /* ── Body ── */
+        .body { padding: 24px 20px; flex: 1; }
+
+        /* Saldo */
+        .saldo-box { margin-bottom: 28px; }
+        .saldo-label {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.9rem; font-weight: 600; color: #555;
+        }
+        .saldo-valor {
+            font-size: 2rem; font-weight: 700;
+            color: #111; margin-top: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        /* Ações */
+        .acoes {
+            display: flex; gap: 10px;
+            overflow-x: auto; padding-bottom: 4px;
+            scrollbar-width: none;
+            margin-bottom: 28px;
+        }
+        .acoes::-webkit-scrollbar { display: none; }
+        .acao {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 8px;
+            min-width: 74px; cursor: pointer;
+            font-size: 0.78rem; font-weight: 500; color: #333;
+            background: none; border: none;
+        }
+        .acao-icone {
+            width: 54px; height: 54px; border-radius: 50%;
+            background: #f3eafc;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+            color: var(--purple);
+        }
+        .acao:hover .acao-icone { background: #e6d5f9; }
+
+        /* Extrato */
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px;
+        }
+        .section-title { font-size: 0.95rem; font-weight: 600; color: #333; }
+        .btn-link {
+            font-size: 0.82rem; color: var(--purple);
+            background: none; border: none; cursor: pointer;
+        }
+
+        .transacao {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 13px 0; border-bottom: 1px solid #f2f2f2;
+        }
+        .transacao-info .tipo { font-size: 0.9rem; color: #333; font-weight: 500; }
+        .transacao-info .data { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
+        .transacao-valor { font-weight: 600; font-size: 0.95rem; }
+        .entrada  { color: #2e7d32; }
+        .saida    { color: #c62828; }
+        .vazio    { color: #bbb; font-size: 0.9rem; text-align: center; padding: 24px 0; }
+
+        /* Modal */
+        .overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.4);
+            align-items: flex-end; justify-content: center; z-index: 50;
+        }
+        .overlay.aberto { display: flex; }
+        .modal {
+            background: white; width: 100%; max-width: 420px;
+            border-radius: 20px 20px 0 0;
+            padding: 28px 20px 40px;
+            animation: slideUp 0.22s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(60px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        .modal-titulo { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; }
+        .modal input {
+            width: 100%; padding: 13px 14px;
+            border: 1.5px solid #ddd; border-radius: 10px;
+            font-size: 1rem; margin-bottom: 12px; outline: none;
+            transition: border-color 0.2s;
+        }
+        .modal input:focus { border-color: var(--purple); }
+        .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+        .btn-cancelar {
+            flex: 1; padding: 13px;
+            border: 1.5px solid #ddd; background: white;
+            border-radius: 10px; cursor: pointer; font-size: 0.95rem;
+        }
+        .btn-confirmar {
+            flex: 1; padding: 13px;
+            border: none; background: var(--purple); color: white;
+            border-radius: 10px; cursor: pointer;
+            font-size: 0.95rem; font-weight: 700;
+            transition: background 0.15s;
+        }
+        .btn-confirmar:hover  { background: var(--purple-dark); }
+        .btn-confirmar:disabled { background: #ccc; cursor: default; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            background: #222; color: white;
+            padding: 11px 22px; border-radius: 20px;
+            font-size: 0.88rem; opacity: 0;
+            pointer-events: none; transition: opacity 0.25s; z-index: 99;
+            white-space: nowrap;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-top">
+            <div class="avatar">
+                <i data-lucide="user" width="20" height="20"></i>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="btn-olho" title="Mostrar/ocultar saldo">
+                    <i data-lucide="eye" width="20" height="20"></i>
+                </button>
+                <button class="icon-btn" title="Ajuda">
+                    <i data-lucide="help-circle" width="20" height="20"></i>
+                </button>
+                <!-- Logout via POST — obrigatório com Spring Security -->
+                <form th:action="@{/logout}" method="post" style="margin:0">
+                    <button type="submit" class="icon-btn" title="Sair">
+                        <i data-lucide="log-out" width="20" height="20"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="welcome">
+            Olá, <span th:text="${usuario != null ? usuario.nome : 'Usuário'}">Usuário</span> 👋
+        </div>
+    </div>
+
+    <!-- Corpo -->
+    <div class="body">
+
+        <!-- Saldo -->
+        <div class="saldo-box">
+            <div class="saldo-label">
+                <span>Conta</span>
+                <i data-lucide="chevron-right" width="15" height="15"></i>
+            </div>
+            <div class="saldo-valor" id="saldo">R$ <span id="saldo-num">–</span></div>
+        </div>
+
+        <!-- Dados do perfil (CPF e telefone, como no projeto console) -->
+        <div style="background:#f9f0ff; border-radius:12px; padding:14px 16px; margin-bottom:24px; font-size:0.85rem; color:#555;">
+            <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                <span>📋 CPF: <strong th:text="${usuario != null and usuario.cpf != null ? usuario.cpf : '—'}">—</strong></span>
+                <span>📱 Tel: <strong th:text="${usuario != null and usuario.telefone != null ? usuario.telefone : '—'}">—</strong></span>
+            </div>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="acoes">
+            <button class="acao" onclick="abrirModal('deposito')">
+                <div class="acao-icone"><i data-lucide="arrow-down-circle" width="22" height="22"></i></div>
+                <span>Depositar</span>
+            </button>
+            <button class="acao" onclick="abrirModal('saque')">
+                <div class="acao-icone"><i data-lucide="arrow-up-circle" width="22" height="22"></i></div>
+                <span>Sacar</span>
+            </button>
+            <button class="acao" onclick="abrirModal('transferencia')">
+                <div class="acao-icone"><i data-lucide="repeat" width="22" height="22"></i></div>
+                <span>Transferir</span>
+            </button>
+            <button class="acao" onclick="carregarExtrato()">
+                <div class="acao-icone"><i data-lucide="list" width="22" height="22"></i></div>
+                <span>Extrato</span>
+            </button>
+        </div>
+
+        <!-- Extrato -->
+        <div>
+            <div class="section-header">
+                <span class="section-title">Extrato</span>
+                <button class="btn-link" onclick="carregarExtrato()">Atualizar</button>
+            </div>
+            <div id="extrato">
+                <div class="vazio">Toque em "Extrato" para carregar</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal de operação -->
+<div class="overlay" id="overlay">
+    <div class="modal">
+        <div class="modal-titulo" id="modal-titulo">Operação</div>
+        <input type="number" id="inp-valor"   placeholder="Valor  ex: 150.00" min="0.01" step="0.01"/>
+        <input type="number" id="inp-destino" placeholder="ID da conta destino" style="display:none"/>
+        <div class="modal-btns">
+            <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+            <button class="btn-confirmar" id="btn-ok" onclick="executar()">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    lucide.createIcons();
+
+    // ── Estado ──────────────────────────────────────────
+    let contaId     = null;
+    let operacao    = null;
+    let saldoAtual  = 0;
+    let escondido   = false;
+
+    // ── Inicialização ────────────────────────────────────
+    // Busca a conta do usuário logado ao carregar a página.
+    // O Spring Security já sabe quem é pelo cookie de sessão (JSESSIONID),
+    // então o fetch() não precisa enviar nenhum token extra — só credentials:'include'.
+    async function init() {
+        try {
+            const res = await fetch('/contas', { credentials: 'include' });
+            if (res.status === 401) { location.href = '/login'; return; }
+
+            const contas = await res.json();
+            if (!contas.length) {
+                document.getElementById('saldo-num').innerText = '—';
+                toast('Nenhuma conta vinculada a este usuário');
+                return;
+            }
+            contaId    = contas[0].id;
+            saldoAtual = contas[0].saldo;
+            mostrarSaldo();
+        } catch (e) {
+            document.getElementById('saldo-num').innerText = 'erro';
+        }
+    }
+
+    // ── Saldo ────────────────────────────────────────────
+    function mostrarSaldo() {
+        document.getElementById('saldo-num').innerText =
+            escondido ? '••••' : fmt(saldoAtual);
+    }
+
+    document.getElementById('btn-olho').addEventListener('click', () => {
+        escondido = !escondido;
+        mostrarSaldo();
+        document.getElementById('btn-olho').innerHTML =
+            `<i data-lucide="${escondido ? 'eye-off' : 'eye'}" width="20" height="20"></i>`;
+        lucide.createIcons();
+    });
+
+    // ── Modal ─────────────────────────────────────────────
+    function abrirModal(tipo) {
+        operacao = tipo;
+        const nomes = { deposito: 'Depositar', saque: 'Sacar', transferencia: 'Transferir' };
+        document.getElementById('modal-titulo').innerText = nomes[tipo];
+        document.getElementById('inp-valor').value   = '';
+        document.getElementById('inp-destino').value = '';
+        document.getElementById('inp-destino').style.display =
+            tipo === 'transferencia' ? 'block' : 'none';
+        document.getElementById('btn-ok').disabled = false;
+        document.getElementById('btn-ok').innerText = 'Confirmar';
+        document.getElementById('overlay').classList.add('aberto');
+        setTimeout(() => document.getElementById('inp-valor').focus(), 120);
+    }
+
+    function fecharModal() {
+        document.getElementById('overlay').classList.remove('aberto');
+    }
+
+    document.getElementById('overlay').addEventListener('click', e => {
+        if (e.target === e.currentTarget) fecharModal();
+    });
+
+    // ── Executar operação ─────────────────────────────────
+    async function executar() {
+        const valor = parseFloat(document.getElementById('inp-valor').value);
+        if (!valor || valor <= 0) { toast('Informe um valor válido'); return; }
+        if (!contaId) { toast('Conta não carregada'); return; }
+
+        const btnOk = document.getElementById('btn-ok');
+        btnOk.disabled   = true;
+        btnOk.innerText  = 'Aguarde...';
+        fecharModal();
+
+        try {
+            let url, opts;
+
+            if (operacao === 'deposito') {
+                url  = `/contas/${contaId}/depositar?valor=${valor}`;
+                opts = { method: 'POST', credentials: 'include' };
+
+            } else if (operacao === 'saque') {
+                url  = `/contas/${contaId}/sacar?valor=${valor}`;
+                opts = { method: 'POST', credentials: 'include' };
+
+            } else {
+                const destino = parseInt(document.getElementById('inp-destino').value);
+                if (!destino) { toast('Informe a conta destino'); return; }
+                url  = '/contas/transferir';
+                opts = {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contaOrigem: contaId, contaDestino: destino, valor })
+                };
+            }
+
+            const res  = await fetch(url, opts);
+            if (res.status === 401) { location.href = '/login'; return; }
+
+            const texto = await res.text();
+            if (!res.ok) { toast(texto || 'Erro na operação'); return; }
+
+            // depositar/sacar retornam JSON com o objeto Conta atualizado
+            try {
+                const conta = JSON.parse(texto);
+                if (conta.saldo !== undefined) {
+                    saldoAtual = conta.saldo;
+                    mostrarSaldo();
+                }
+            } catch (_) {
+                // transferir retorna string simples — recarrega saldo
+                await init();
+            }
+
+            toast('✓ ' + (operacao === 'deposito' ? 'Depósito' :
+                operacao === 'saque'    ? 'Saque'    : 'Transferência') + ' realizado!');
+            carregarExtrato();
+
+        } catch (e) {
+            toast('Erro de conexão com o servidor');
+        }
+    }
+
+    // ── Extrato ───────────────────────────────────────────
+    async function carregarExtrato() {
+        if (!contaId) { toast('Conta não carregada'); return; }
+
+        const div = document.getElementById('extrato');
+        div.innerHTML = '<div class="vazio">Carregando...</div>';
+
+        try {
+            const res = await fetch(`/contas/${contaId}/transacoes`, { credentials: 'include' });
+            if (res.status === 401) { location.href = '/login'; return; }
+
+            const lista = await res.json();
+            if (!lista.length) {
+                div.innerHTML = '<div class="vazio">Nenhuma transação ainda</div>';
+                return;
+            }
+
+            // Mais recente primeiro
+            lista.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            div.innerHTML = lista.map(t => {
+                const entrada = t.tipo === 'DEPOSITO';
+                const sinal   = entrada ? '+ R$' : '− R$';
+                const cls     = entrada ? 'entrada' : 'saida';
+                const label   = t.tipo.charAt(0) + t.tipo.slice(1).toLowerCase();
+                const data    = new Date(t.data).toLocaleString('pt-BR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+                return `
+            <div class="transacao">
+                <div class="transacao-info">
+                    <div class="tipo">${label}</div>
+                    <div class="data">${data}</div>
+                </div>
+                <div class="transacao-valor ${cls}">${sinal} ${fmt(t.valor)}</div>
+            </div>`;
+            }).join('');
+
+        } catch (e) {
+            div.innerHTML = '<div class="vazio" style="color:#c00">Erro ao carregar extrato</div>';
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────
+    function fmt(v) {
+        return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    let toastTimer;
+    function toast(msg) {
+        const el = document.getElementById('toast');
+        el.innerText = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    init();
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+### Criar conta
+POST http://localhost:8080/contas
+Content-Type: application/json
+
+{
+  "titular": "Alef",
+  "saldo": 1000
+}
+
+### Criar segunda conta
+POST http://localhost:8080/contas
+Content-Type: application/json
+
+{
+  "titular": "Maria",
+  "saldo": 500
+}
+
+### Depositar
+POST http://localhost:8080/contas/1/depositar?valor=300
+
+### Sacar
+POST http://localhost:8080/contas/1/sacar?valor=100
+
+### Transferir
+POST http://localhost:8080/contas/transferir
+Content-Type: application/json
+
+{
+  "contaOrigem": 1,
+  "contaDestino": 2,
+  "valor": 200
+}
+
+### Listar contas
+GET http://localhost:8080/contas
